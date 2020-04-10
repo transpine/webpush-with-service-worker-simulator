@@ -13,13 +13,16 @@ app.use(cors());    //cross origin 허용
 app.use(express.json());    //json사용
 app.use(express.urlencoded({ extended: true})); //body-parse사용
 
+app.use('/client', express.static('client'));       //구독 페이지
+app.use('/sketcher', express.static('sketcher'));   //Push 전송 페이지
+
 app.get('/', (req, res) =>{
     res.send("Web Push Server");
 });
 
 const options = {
-    cert: fs.readFileSync('localhost.pem'),
-    key: fs.readFileSync('localhost-key.pem')
+    cert: fs.readFileSync('localhost+3.pem'),
+    key: fs.readFileSync('localhost+3-key.pem')
 };  
 
 const vapidKeys = webpush.generateVAPIDKeys();
@@ -29,31 +32,38 @@ webpush.setVapidDetails(
     vapidKeys.privateKey
 );
 
-app.get('/push/key', function(req, res){
+// 1. service-worker의 pushManager가 Registration을 하기 위한  키를 받아오는 GET
+app.get('/push/key', (req, res) => {
     console.log(`publick key sent: ${vapidKeys.publicKey}`);
     res.send({
         key: vapidKeys.publicKey
     });
 });
 
+// 2. 구독 POST
 const temp_subs = [];
-app.post('/push/subscribe', function(req, res){
-    temp_subs.append(req.body.subscription);
-    console.log(req.body);
-
-    res.send('Success');
+app.post('/push/subscribe', (req, res) => {
+    temp_subs.push(req.body.subscription);
+    console.log(`subscribed : ${JSON.stringify(req.body.subscription)}`);
+    res.send('Subscribed');
 });
 
-app.post('/push/notify', function(req, res){
+// 3. 등록된 브라우저 들에게 푸시를 보내는 POST
+app.post('/push/notify', (req, res) => {
+    console.log(`-------------------------------------------`);
+    console.log(`notify requested : ${JSON.stringify(req.body)}`);
     let payload = {};
     payload.title = req.body.title;
     payload.message = req.body.message;
 
-    for(const subs in temp_subs){
+    for(const subs of temp_subs){
         webpush.sendNotification(subs, JSON.stringify(payload))
-        .then(function (response) {
+        .then( (response) => {
             console.log('sent notification');
             res.sendStatus(201);
+        }).catch( (err) => {
+            console.error(`notification error : ${err}`);
+            res.sendStatus(500);
         });
     }
 });
