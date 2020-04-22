@@ -27,6 +27,14 @@ function registerPush(appPubkey) {
     }).catch(function (err) {
         console.log("Service Worker Failed to Register", err);
     });    
+
+    navigator.serviceWorker.addEventListener('message', function(event) {
+        console.log("Got Reply from service worker:", event.data);
+        document.querySelector('.title').innerText = event.data.title;
+        document.querySelector('.message').innerText = event.data.message;
+        document.querySelector('.result_image').src = event.data.image_url;
+    });
+
 }
 
 function urlBase64ToUint8Array(base64String) {

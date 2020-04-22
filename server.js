@@ -55,6 +55,7 @@ app.post('/push/notify', (req, res) => {
     let payload = {};
     payload.title = req.body.title;
     payload.message = req.body.message;
+    payload.image_url = req.body.image_url;
 
     for(const subs of temp_subs){
         webpush.sendNotification(subs, JSON.stringify(payload))
