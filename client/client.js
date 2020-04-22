@@ -16,8 +16,7 @@ function registerPush(appPubkey) {
             .then(function(subscription) {
                 console.log('post subscription : ', subscription);
                 mysubscription = subscription;
-                // return fetch('https://127.0.0.1:4999/push/subscribe', {
-                return fetch('https://192.168.0.100:4999/push/subscribe', {
+                return fetch('https://127.0.0.1:4999/push/subscribe', {
                     method: 'post',
                     headers: { 'Content-type': 'application/json' },
                     body: JSON.stringify({ subscription: subscription })
@@ -27,13 +26,7 @@ function registerPush(appPubkey) {
             });        
     }).catch(function (err) {
         console.log("Service Worker Failed to Register", err);
-    });
-    
-    // navigator.serviceWorker.addEventListener('message', function(event) {
-    //     console.log("Got Reply from service worker:", event.data);
-    //     document.querySelector('.comment_wrappter').style.left = event.data.x;
-    //     document.querySelector('.comment_wrappter').style.top = event.data.y;
-    // });
+    });    
 }
 
 function urlBase64ToUint8Array(base64String) {
@@ -54,8 +47,7 @@ function urlBase64ToUint8Array(base64String) {
 
 document.querySelector('#subscribe').onclick = () =>{
     if (navigator.serviceWorker) {
-        // fetch('https://127.0.0.1:4999/push/key')
-        fetch('https://192.168.0.100:4999/push/key')
+        fetch('https://127.0.0.1:4999/push/key')
         .then( e => e.json()).then( (result) =>{
             document.querySelector('#receivedPubKey').innerText = result.key;
             registerPush(result.key);
